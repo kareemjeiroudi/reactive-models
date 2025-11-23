@@ -1,14 +1,18 @@
 {
   "name": "@kareemjeiroudi/reactive-models",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A parent-child reactive contract with ergonomic two-way binding. This contract pattern is more ergonomic than React's native reactive API.",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "type": "module",
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.cjs",
+      "types": "./dist/dts/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "prepublish": "bun build"

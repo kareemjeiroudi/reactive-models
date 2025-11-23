@@ -8,14 +8,14 @@ export function useComputedModel<S>(
   factory: (prev: S) => S,
   deps: DependencyList,
   initialValue: S,
-): Model<S>;
-export function useComputedModel<S>(factory: (prev?: S) => S, deps: DependencyList): Model<S>;
+): Reactive<S>;
+export function useComputedModel<S>(factory: (prev?: S) => S, deps: DependencyList): Reactive<S>;
 export function useComputedModel<S>(
   factory: (prev?: S) => S,
   deps: DependencyList,
   initialValue?: S,
-): Model<S> {
-  const previous = useModel<S>(initialValue as S);
+): Reactive<S> {
+  const previous = useReactive<S>(initialValue as S);
   const factoryWithHistory: () => S = () => {
     const newUpdate = factory(previous.value);
     previous.update(newUpdate);
@@ -45,7 +45,7 @@ export function useComputed<S>(
  * Vue-like reactive model that doesn't require knowledge dispatchers. Can be treated like a regular TS object.
  * Models create a shallow reactive reference. Use them where two-way bindings are expected such as form controls.
  */
-class Model<S> {
+class Reactive<S> {
   private _value: S;
   private _dispatch: Dispatch<SetStateAction<S>>;
 
@@ -67,7 +67,7 @@ class Model<S> {
     this._dispatch(fun);
   }
 
-  isDefined(): this is Model<NonNullable<S>> {
+  isDefined(): this is Reactive<NonNullable<S>> {
     return this._value !== undefined && this._value !== null;
   }
 
@@ -75,29 +75,33 @@ class Model<S> {
     return !this._value;
   }
 
-  map<T>(mappingFn: (prev: S) => T): Model<T> {
-    return useModel<T>(mappingFn(this._value));
+  map<T>(mappingFn: (prev: S) => T): Reactive<T> {
+    return useReactive<T>(mappingFn(this._value));
   }
 
-  ifPresent(callable: (prev: NonNullable<S>, update: typeof this._dispatch) => void): Model<S> {
+  ifPresent(callable: (prev: NonNullable<S>, update: typeof this._dispatch) => void): Reactive<S> {
     if (this.isDefined()) {
       callable(this._value, this._dispatch);
     }
     return this;
   }
 
-  reset(): Model<S> {
+  reset(): Reactive<S> {
     this.update(undefined as S);
     return this;
   }
 }
 
-export type { Model };
+export type { Reactive };
 
-export function useModel<S>(initialValue: () => S): Model<S>;
-export function useModel<S>(initialValue: S): Model<S>;
-export function useModel<S>(): Model<S | undefined>;
-export function useModel<S>(initialValue?: S): Model<S> {
-  const reactiveModel = useState(initialValue);
-  return new Model(reactiveModel as [S, Dispatch<SetStateAction<S>>]);
+/**
+ * Vue-like reactive model that doesn't require knowledge dispatchers. Can be treated like a regular TS object.
+ * Models create a shallow reactive reference. Use them where two-way bindings are expected such as form controls.
+ */
+export function useReactive<S>(initialValue: () => S): Reactive<S>;
+export function useReactive<S>(initialValue: S): Reactive<S>;
+export function useReactive<S>(): Reactive<S | undefined>;
+export function useReactive<S>(initialValue?: S): Reactive<S> {
+  const reactive = useState(initialValue);
+  return new Reactive(reactive as [S, Dispatch<SetStateAction<S>>]);
 }

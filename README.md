@@ -18,7 +18,7 @@ Models never escape the parent’s lifecycle; they are not global stores or prox
 * Computed Models
 Create memoized derivations that also expose previous values.
 * Async memo utilities
-For promise-based reactive flows (`useAsyncMemo`, `usePromise`).
+For promise-based reactive flows (`useAsyncComputed`, `useAsyncReactive`).
 * TypeScript-first
 Models are fully typed and support generics everywhere.
 
@@ -49,10 +49,10 @@ bun add @kareemjeiroudi/reactive-models
 Parent component
 
 ```ts
-import { useModel } from "@kareemjeiroudi/reactive-models";
+import { useReactive } from "@kareemjeiroudi/reactive-models";
 
 function Parent() {
-  const name = useModel("");
+  const name = useReactive("");
 
   return <Child name={name} />;
 }
@@ -82,13 +82,13 @@ Just a reactive, two-way binding contract.
 ### Reactive model
 
 ```ts
-useModel(initialValue)
+useReactive(initialValue)
 ```
 
 Creates a parent-owned reactive model.
 
 ```ts
-const count = useModel(0);
+const count = useReactive(0);
 
 count.value++;           // update
 count.update(v => v+1);  // functional update
@@ -143,19 +143,19 @@ The main difference here is that while a computed property is read-only, and can
 Stop me here if you've experience this problem before: you've declared a asynchronous reactive state in component (particularily client components), however couldn't use awaits. This hooks proxies the promise for you, and delivers it upon promise resolve.
 
 ```ts
-usePromise(promise)
+useAsyncReactive(promise)
 ```
 
 ### Asynchronous memos
 
-Similar to `usePromise` but offers memoization options. In a future, release, I will provide a way for React compiler to detect the dependecies and improve memoization too.
+Similar to `useAsyncReactive` but offers memoization options. In a future, release, I will provide a way for React compiler to detect the dependecies and improve memoization too.
 
 ```ts
-useAsyncMemo(promise, deps)
+useAsyncComputed(promise, deps)
 
 Resolve promises reactively and store the result in a model.
 
-const user = useAsyncMemo(
+const user = useAsyncComputed(
   () => fetch("/api/user").then(res => res.json()),
   []
 );

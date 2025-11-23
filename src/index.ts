@@ -1,2 +1,2 @@
-export { useAsyncMemo, usePromise } from "./async";
-export { type Model, useComputed, useComputedModel, useModel } from "./reactive";
+export { useAsyncComputed, useAsyncReactive } from "./async";
+export { type Reactive, useComputed, useComputedModel, useReactive } from "./reactive";
