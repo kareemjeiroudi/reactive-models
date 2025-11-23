@@ -46,25 +46,19 @@ export function useComputed<S>(
  * Models create a shallow reactive reference. Use them where two-way bindings are expected such as form controls.
  */
 class Reactive<S> {
-  private _value: S;
-  private _dispatch: Dispatch<SetStateAction<S>>;
+  private readonly _value: S;
+  readonly update: Dispatch<SetStateAction<S>> = () => {};
 
   get value(): S {
     return this._value;
   }
 
   set value(newValue: S) {
-    this._dispatch(newValue);
+    this.update(newValue);
   }
 
   constructor(reactiveModel: [S, Dispatch<SetStateAction<S>>]) {
-    [this._value, this._dispatch] = reactiveModel;
-  }
-
-  update(newValue: S): void;
-  update(fun: (previous: S) => S): void;
-  update(fun: S | ((previous: S) => S)): void {
-    this._dispatch(fun);
+    [this._value, this.update] = reactiveModel;
   }
 
   isDefined(): this is Reactive<NonNullable<S>> {
@@ -79,9 +73,9 @@ class Reactive<S> {
     return useReactive<T>(mappingFn(this._value));
   }
 
-  ifPresent(callable: (prev: NonNullable<S>, update: typeof this._dispatch) => void): Reactive<S> {
+  ifPresent(callable: (prev: NonNullable<S>, update: typeof this.update) => void): Reactive<S> {
     if (this.isDefined()) {
-      callable(this._value, this._dispatch);
+      callable(this._value, this.update);
     }
     return this;
   }

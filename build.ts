@@ -23,7 +23,7 @@ export const dtsPlugin: BunPlugin = {
         outDir: "dist/dts",
       });
 
-      const result = program.emit();
+      program.emit();
     });
   },
 };
@@ -63,7 +63,7 @@ async function buildFor(format: BuildConfig["format"]) {
     naming: `[dir]/[name].${ext}`,
     target: "node",
     format,
-    minify: true,
+    minify: production,
     sourcemap: watch ? "inline" : "none",
     splitting: true,
     tsconfig: "./tsconfig.json",
@@ -71,7 +71,6 @@ async function buildFor(format: BuildConfig["format"]) {
     external: ["react", "react-dom"],
   });
 }
-
 
 build().catch((e) => {
   console.error(e);

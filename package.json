@@ -1,6 +1,6 @@
 {
   "name": "@kareemjeiroudi/reactive-models",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A parent-child reactive contract with ergonomic two-way binding. This contract pattern is more ergonomic than React's native reactive API.",
   "type": "module",
   "files": [
@@ -14,8 +14,14 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "prepublish": "bun build"
+    "build": "bun run ./build.ts",
+    "build:production": "bun run ./build.ts --production",
+    "compile": "tsc",
+    "prepublish": "bun build",
+    "lint": "biome lint",
+    "lint:write": "biome lint --write",
+    "format": "biome format",
+    "format:write": "biome format --write"
   },
   "author": "Kareem Jeiroudi",
   "license": "MIT",
@@ -28,6 +34,10 @@
     "react-dom": ">=18"
   },
   "devDependencies": {
-    "@types/react": "^19.2.6"
+    "@types/react": "^19.2.6",
+    "@biomejs/biome": "^2.2.7",
+    "@types/bun": "^1.3.0",
+    "chokidar": "^4.0.3",
+    "typescript": "^5.9.2"
   }
 }
