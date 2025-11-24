@@ -1,16 +1,16 @@
 import { type DependencyList, type Dispatch, type SetStateAction, useMemo, useState } from "react";
 
 /**
- * A computed model is a memoized reactive property that recomputes upon updates in the depency list, while offering the user the choice to overwrite the recent value. Recent updates are reflected in both the model,
- * and the memoization function.
+ * A computed reactive is a memoized reactive property that recomputes upon updates in the dependency list, while offering the user the choice to overwrite the recent value. Recent updates are reflected in both the reactive reference
+ * as well as the memoization function.
  */
-export function useComputedModel<S>(
+export function useComputedReactive<S>(
   factory: (prev: S) => S,
   deps: DependencyList,
   initialValue: S,
 ): Reactive<S>;
-export function useComputedModel<S>(factory: (prev?: S) => S, deps: DependencyList): Reactive<S>;
-export function useComputedModel<S>(
+export function useComputedReactive<S>(factory: (prev?: S) => S, deps: DependencyList): Reactive<S>;
+export function useComputedReactive<S>(
   factory: (prev?: S) => S,
   deps: DependencyList,
   initialValue?: S,
@@ -27,7 +27,7 @@ export function useComputedModel<S>(
 }
 
 /**
- * A computed property is analogous to a meomoized property in React, it updates upon changes in the dependencies.
+ * A computed memo is analogous to a meomoized property in React, it updates upon changes in the dependencies.
  * However, it provides the previous value
  */
 export function useComputed<S>(factory: (prev: S) => S, deps: DependencyList, initialValue: S): S;
@@ -37,13 +37,13 @@ export function useComputed<S>(
   deps: DependencyList,
   initialValue?: S,
 ): S | undefined {
-  const model = useComputedModel(factory, deps, initialValue);
+  const model = useComputedReactive(factory, deps, initialValue);
   return model.value;
 }
 
 /**
- * Vue-like reactive model that doesn't require knowledge dispatchers. Can be treated like a regular TS object.
- * Models create a shallow reactive reference. Use them where two-way bindings are expected such as form controls.
+ * Vue-like reactive reference that doesn't require knowledge dispatchers. Can be treated like a regular TS object.
+ * Reactive references create a shallow reactive reference. I.e. deeply nested changes to cause the Reactive state to change. See {} Use them where two-way bindings are expected such as form controls.
  */
 class Reactive<S> {
   private readonly _value: S;
@@ -90,7 +90,7 @@ export type { Reactive };
 
 /**
  * Vue-like reactive model that doesn't require knowledge dispatchers. Can be treated like a regular TS object.
- * Models create a shallow reactive reference. Use them where two-way bindings are expected such as form controls.
+ * Models create a shallow reactive reference. For deep reactivity, see {@link DeepReactive}. Use them where two-way bindings are expected such as form controls.
  */
 export function useReactive<S>(initialValue: () => S): Reactive<S>;
 export function useReactive<S>(initialValue: S): Reactive<S>;
@@ -99,3 +99,6 @@ export function useReactive<S>(initialValue?: S): Reactive<S> {
   const reactive = useState(initialValue);
   return new Reactive(reactive as [S, Dispatch<SetStateAction<S>>]);
 }
+
+// biome-ignore lint/complexity/noBannedTypes: will be implemented in a future update
+export type DeepReactive<_S> = {};
