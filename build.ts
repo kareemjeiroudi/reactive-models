@@ -78,7 +78,7 @@ build().catch((e) => {
 });
 
 if (watch) {
-  console.log("👀 Watching file changes in reative-models");
+  console.log("👀 Watching file changes in reactive-models");
   const watcher = chokidar.watch(["./src"], {
     ignoreInitial: true,
   });
