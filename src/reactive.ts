@@ -1,4 +1,11 @@
-import { type DependencyList, type Dispatch, type SetStateAction, useMemo, useState } from "react";
+import {
+  type DependencyList,
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 /**
  * A computed reactive is a memoized reactive property that recomputes upon updates in the dependency list, while offering the user the choice to overwrite the recent value. Recent updates are reflected in both the reactive reference
@@ -46,29 +53,14 @@ export function useComputed<S>(
  * Reactive references create a shallow reactive reference. I.e. deeply nested changes to cause the Reactive state to change. See {} Use them where two-way bindings are expected such as form controls.
  */
 
-type Watcher<S> = (current: S) => void;
-class Reactive<S> {
-  private readonly _value: S;
-  readonly update: Dispatch<SetStateAction<S>> = () => {};
-  get value(): S {
-    return this._value;
-  }
+type Watcher<S> = (current?: S) => void;
 
-  set value(newValue: S) {
-    this.update(newValue);
-  }
+type Reactive<S> = {
+  readonly value: S;
+  readonly update: Dispatch<SetStateAction<S>>;
+  isDefined(): this is Reactive<NonNullable<S>>;
 
-  constructor(reactiveModel: [S, Dispatch<SetStateAction<S>>]) {
-    [this._value, this.update] = reactiveModel;
-  }
-
-  isDefined(): this is Reactive<NonNullable<S>> {
-    return this._value !== undefined && this._value !== null;
-  }
-
-  isEmpty(): boolean {
-    return !this._value;
-  }
+  isEmpty(): boolean;
 
   /**
    * Use `onUpdate` to register one or multiple watchers that run everytime the value is updated. Please don't perform more than one action per watcher.
@@ -80,31 +72,13 @@ class Reactive<S> {
    */
   onUpdate(watcher: Watcher<S>): Reactive<S>;
   onUpdate(watcher: Watcher<S>, watcherId: string): Reactive<S>;
-  onUpdate(watcher: Watcher<S>, _watcherId?: string): Reactive<S> {
-    throw new Error("Not implemented yet!");
-  }
 
-  /**
-   * Streams reactive updates into a memo.
-   */
-  memo<T>(mappingFn: (prev: S) => T): T;
-  memo<T>(mappingFn: (prev: S) => T, deps: DependencyList): T;
-  memo<T>(mappingFn: (prev: S) => T, deps: DependencyList = []): T {
-    return useMemo<T>(() => mappingFn(this._value), [this._value, ...deps]);
-  }
+  ifPresent(
+    callable: (prev: NonNullable<S>, update: Dispatch<SetStateAction<S>>) => void,
+  ): Reactive<S | undefined>;
 
-  ifPresent(callable: (prev: NonNullable<S>, update: typeof this.update) => void): Reactive<S> {
-    if (this.isDefined()) {
-      callable(this._value, this.update);
-    }
-    return this;
-  }
-
-  reset(): Reactive<S> {
-    this.update(undefined as S);
-    return this;
-  }
-}
+  reset(): Reactive<S>;
+};
 
 export type { Reactive };
 
@@ -115,9 +89,47 @@ export type { Reactive };
 export function useReactive<S>(initialValue: () => S): Reactive<S>;
 export function useReactive<S>(initialValue: S): Reactive<S>;
 export function useReactive<S>(): Reactive<S | undefined>;
-export function useReactive<S>(initialValue?: S): Reactive<S> {
-  const reactive = useState(initialValue);
-  return new Reactive(reactive as [S, Dispatch<SetStateAction<S>>]);
+export function useReactive<S>(initialValue?: S): Reactive<S | undefined> {
+  const [value, update] = useState(initialValue);
+  let watchers: Watcher<S>[] = [];
+
+  useEffect(() => {
+    watchers.forEach((watcher) => {
+      watcher(value);
+    });
+
+    return () => {
+      watchers = [];
+    };
+  }, [value, watchers]);
+
+  const reactive: Reactive<S | undefined> = {
+    value,
+    update,
+    isDefined(): this is Reactive<NonNullable<S>> {
+      return value !== undefined && value !== null;
+    },
+    isEmpty(): boolean {
+      return !value;
+    },
+    ifPresent(callable): Reactive<S | undefined> {
+      if (this.isDefined()) {
+        callable(this.value, this.update);
+      }
+
+      return this;
+    },
+    reset(): Reactive<S | undefined> {
+      update(undefined);
+      return this;
+    },
+    onUpdate(watcher) {
+      setWatchers((prev) => [...prev, watcher]);
+      return this;
+    },
+  };
+
+  return reactive;
 }
 
 // biome-ignore lint/complexity/noBannedTypes: will be implemented in a future update
