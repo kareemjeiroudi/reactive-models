@@ -3,7 +3,6 @@ export {
   type Reactive,
   useComputed,
   useComputedReactive,
-  /** @deprecated has been renamed to {@link useComputedReactive}. Avoid using the old API */
-  useComputedReactive as useComputedModel,
+  useMemoOr,
   useReactive,
 } from "./reactive";
