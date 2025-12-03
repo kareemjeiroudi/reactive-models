@@ -1,6 +1,5 @@
-import { type DependencyList, useMemo } from "react";
+import { type DependencyList, useEffect, useMemo } from "react";
 import { type Reactive, useReactive } from "./reactive";
-
 /**
  * A proxy for asynchronous reactive states. Helpful in client components. State is overwritable after the promise had been resolved. It behaves 1:1 the same as {@link useReactive} - the
  * only difference is that, it's unknown how long before the promise is resolved. It's always recommended to set an initial value therefore, if that's something your application cares about.
@@ -27,8 +26,16 @@ export function useAsyncComputed<S>(
   initialValue?: S,
 ): S {
   const previous = useReactive<S>(initialValue as S);
+  const mounted = useReactive(false);
+  useEffect(() => {
+    mounted.update(true);
+  }, [mounted.update]);
   const asyncFactory: () => Promise<S> = () => factory(previous.value);
   // biome-ignore lint/correctness/useExhaustiveDependencies: delegration call to React API
-  useMemo(asyncFactory, deps).then(previous.update);
+  useMemo(asyncFactory, deps).then((result) => {
+    if (mounted.value) {
+      previous.update(result);
+    }
+  });
   return previous.value;
 }
